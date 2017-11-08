@@ -3,3 +3,5 @@ _*
 *.mrc
 old*
 Dump*
+*.cif
+*.XYZ
