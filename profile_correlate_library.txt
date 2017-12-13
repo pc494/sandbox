@@ -1,0 +1,35 @@
+Timer unit: 1e-06 s
+
+Total time: 0.602344 s
+File: profiling_correlate_library.py
+Function: correlate_library at line 28
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    28                                           @profile
+    29                                           def correlate_library(image, library, n_largest):
+    30                                               """Correlates all simulated diffraction templates in a DiffractionLibrary
+    31                                               with a particular experimental diffraction pattern (image) stored as a
+    32                                               numpy array.
+    33                                               """
+    34         1            3      3.0      0.0      i=0
+    35         1           10     10.0      0.0      out_arr = np.zeros((n_largest * len(library),5))
+    36         2            6      3.0      0.0      for key in library.keys():
+    37         1            2      2.0      0.0          if n_largest:
+    38         1            2      2.0      0.0              pass
+    39                                                   else:
+    40                                                       n_largest=len(library[key])
+    41         1            2      2.0      0.0          correlations = dict()
+    42       501          667      1.3      0.1          for orientation, diffraction_pattern in library[key].items():
+    43       500       598672   1197.3     99.4              correlation = correlate(image, diffraction_pattern)
+    44       500         1218      2.4      0.2              correlations[orientation] = correlation
+    45         1         1694   1694.0      0.3          res = nlargest(n_largest, correlations.items(), key=itemgetter(1))
+    46         4           20      5.0      0.0          for j in np.arange(n_largest):
+    47         3           13      4.3      0.0              out_arr[j + i*n_largest][0] = i
+    48         3            9      3.0      0.0              out_arr[j + i*n_largest][1] = res[j][0][0]
+    49         3            9      3.0      0.0              out_arr[j + i*n_largest][2] = res[j][0][1]
+    50         3            7      2.3      0.0              out_arr[j + i*n_largest][3] = res[j][0][2]
+    51         3            8      2.7      0.0              out_arr[j + i*n_largest][4] = res[j][1]
+    52         1            1      1.0      0.0          i = i + 1
+    53         1            1      1.0      0.0      return out_arr
+
