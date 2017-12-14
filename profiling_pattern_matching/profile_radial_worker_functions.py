@@ -40,7 +40,7 @@ def radial_average(z, center):
     averaged = tbin / nr
 
     return averaged
-@profile
+
 def as_signal(z, size, sigma, max_r):
     dp_dat = 0
     l = np.linspace(-max_r, max_r, size)
@@ -59,9 +59,31 @@ def as_signal(z, size, sigma, max_r):
 
     return dp
 
+def which_edge(l,d,d_up):
+    if (d - l[d_up-1]) > (l[d_up]-d):
+        return d_up
+    else:
+        return d_up-1
+@profile
+def as_pure_peaks(z,size,max_r):
+    l = np.linspace(-max_r, max_r, size)
+    coords = z.coordinates[:, :2]
+    signal = np.zeros([size,size])
+    for x,y in coords:
+        x_up,y_up = np.sum(l < x),np.sum(l < y) # when x > l we have overshot slightly, 
+        x_num,y_num = which_edge(l,x,x_up),which_edge(l,y,y_up)
+        ## next fix the intensity
+        signal[x_num,y_num] += 1
+    dp = ElectronDiffraction(signal)
+    dp.set_calibration(2*max_r/size)
+    
+    return dp
+
+    
+
 timer = 0
 for XZX in library['CsPbBr3']:
-    z_temp = as_signal(library['CsPbBr3'][XZX],144,0.1,2.1).data #pull out for profile
+    z_temp = as_pure_peaks(library['CsPbBr3'][XZX],144,2.1).data #pull out for profile
     radial_sims[XZX] = radial_average(z_temp,center=[144/2,144/2])
     timer += 1
     if timer%1000==0:
