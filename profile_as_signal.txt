@@ -1,6 +1,6 @@
 Timer unit: 1e-06 s
 
-Total time: 1.00236 s
+Total time: 0.996165 s
 File: profile_as_signal.py
 Function: version_1 at line 35
 
@@ -8,20 +8,20 @@ Line #      Hits         Time  Per Hit   % Time  Line Contents
 ==============================================================
     35                                           @profile
     36                                           def version_1():
-    37         1        499.0    499.0      0.0      x, y = np.meshgrid(l, l)
+    37         1        490.0    490.0      0.0      x, y = np.meshgrid(l, l)
     38         1          2.0      2.0      0.0      dp_dat = 0
-    39         1     816509.0 816509.0     81.5      g = Expression(_GAUSSIAN2D_EXPR, 'Gaussian2D', module='numexpr')
-    40        25        570.0     22.8      0.1      for (cx, cy), intensity in zip(coords[:,:2],intensities):
-    41        24       1792.0     74.7      0.2          g.intensity.value = intensity
-    42        24        613.0     25.5      0.1          g.sigma.value = sigma
-    43        24        664.0     27.7      0.1          g.cx.value = cx
-    44        24        961.0     40.0      0.1          g.cy.value = cy
-    45        24     144515.0   6021.5     14.4          dp_dat += g.function(x, y)
-    46         1      35578.0  35578.0      3.5      dp = ElectronDiffraction(dp_dat)
-    47         1        652.0    652.0      0.1      dp.set_calibration(2*max_r/size)
+    39         1     816023.0 816023.0     81.9      g = Expression(_GAUSSIAN2D_EXPR, 'Gaussian2D', module='numexpr')
+    40        25        457.0     18.3      0.0      for (cx, cy), intensity in zip(coords[:,:2],intensities):
+    41        24       1696.0     70.7      0.2          g.intensity.value = intensity
+    42        24        533.0     22.2      0.1          g.sigma.value = sigma
+    43        24        620.0     25.8      0.1          g.cx.value = cx
+    44        24        892.0     37.2      0.1          g.cy.value = cy
+    45        24     144653.0   6027.2     14.5          dp_dat += g.function(x, y)
+    46         1      30230.0  30230.0      3.0      dp = ElectronDiffraction(dp_dat)
+    47         1        567.0    567.0      0.1      dp.set_calibration(2*max_r/size)
     48         1          2.0      2.0      0.0      return dp
 
-Total time: 0.005948 s
+Total time: 0.005307 s
 File: profile_as_signal.py
 Function: version_2 at line 50
 
@@ -29,16 +29,16 @@ Line #      Hits         Time  Per Hit   % Time  Line Contents
 ==============================================================
     50                                           @profile
     51                                           def version_2():
-    52         1         38.0     38.0      0.6      signal = np.zeros([size,size])
-    53        25         57.0      2.3      1.0      for i in np.arange(coords.shape[0]):
-    54        24        103.0      4.3      1.7          x,y = coords[i,0]-(delta_l/2),coords[i,1]-(delta_l/2)
-    55        24        988.0     41.2     16.6          x_num,y_num = np.sum(l < x)-1,np.sum(l < y)-1    
-    56        24        745.0     31.0     12.5          signal[x_num,y_num] += diff_dat.intensities[i]
+    52         1         29.0     29.0      0.5      signal = np.zeros([size,size])
+    53        25         60.0      2.4      1.1      for i in np.arange(coords.shape[0]):
+    54        24         93.0      3.9      1.8          x,y = coords[i,0]-(delta_l/2),coords[i,1]-(delta_l/2)
+    55        24        984.0     41.0     18.5          x_num,y_num = np.sum(l < x)-1,np.sum(l < y)-1    
+    56        24        732.0     30.5     13.8          signal[x_num,y_num] += diff_dat.intensities[i]
     57         1         12.0     12.0      0.2      from skimage.filters import gaussian as point_spread
-    58         1       4003.0   4003.0     67.3      signal = point_spread(signal,sigma=sigma/delta_l)
+    58         1       3395.0   3395.0     64.0      signal = point_spread(signal,sigma=sigma/delta_l)
     59         1          2.0      2.0      0.0      return signal
 
-Total time: 5.52588 s
+Total time: 5.41947 s
 File: profile_as_signal.py
 Function: version_3 at line 61
 
@@ -49,18 +49,25 @@ Line #      Hits         Time  Per Hit   % Time  Line Contents
     63         1          2.0      2.0      0.0      electron_array = False
     64         1          2.0      2.0      0.0      ss = 5000 #sample size
     65                                               #sigma = sigma*delta_l
-    66         1         79.0     79.0      0.0      peak_location_detailed = np.hstack((coords,np.ones_like(intensities.reshape(24,1))))
-    67        25        134.0      5.4      0.0      for peak in peak_location_detailed:
-    68        24        197.0      8.2      0.0          if type(electron_array) == np.ndarray:
-    69        23      28765.0   1250.7      0.5              electron_array_2 = np.random.multivariate_normal(peak[:2],sigma*np.eye(2,2),size=ss*np.rint(peak[3]).astype(int))
-    70        23      14014.0    609.3      0.3              electron_array = np.vstack((electron_array,electron_array_2))  
+    66         1         76.0     76.0      0.0      peak_location_detailed = np.hstack((coords,np.ones_like(intensities.reshape(24,1))))
+    67        25        253.0     10.1      0.0      for peak in peak_location_detailed:
+    68        24        171.0      7.1      0.0          if type(electron_array) == np.ndarray:
+    69        23      55724.0   2422.8      1.0              electron_array_2 = np.random.multivariate_normal(peak[:2],sigma*np.eye(2,2),size=ss*np.rint(peak[3]).astype(int))
+    70        23      18987.0    825.5      0.4              electron_array = np.vstack((electron_array,electron_array_2))  
     71                                                   else:
-    72         1       1396.0   1396.0      0.0              electron_array = np.random.multivariate_normal(peak[:2],sigma*np.eye(2,2),size=ss*np.rint(peak[3]).astype(int))
-    73         1         12.0     12.0      0.0      signal = np.zeros([size,size])
-    74    120001     316152.0      2.6      5.7      for elect in electron_array:
-    75    120000     466760.0      3.9      8.4          x,y = elect[0]-(delta_l/2),elect[1]-(delta_l/2)
-    76    120000     315074.0      2.6      5.7          if x > -1.2 and x < 1.2 and y > -1.2 and y < 1.2:
-    77     93303    3987842.0     42.7     72.2              x_num,y_num = np.sum(l < x)-1,np.sum(l < y)-1 
-    78     93303     395447.0      4.2      7.2              signal[x_num,y_num] += 1
-    79         1          2.0      2.0      0.0      return signal
+    72         1      62689.0  62689.0      1.2              electron_array = np.random.multivariate_normal(peak[:2],sigma*np.eye(2,2),size=ss*np.rint(peak[3]).astype(int))
+    73         1         19.0     19.0      0.0      signal = np.zeros([size,size])
+    74    120001     339712.0      2.8      6.3      for elect in electron_array:
+    75    120000     473992.0      3.9      8.7          x,y = elect[0]-(delta_l/2),elect[1]-(delta_l/2)
+    76    120000     339654.0      2.8      6.3          if x > -1.2 and x < 1.2 and y > -1.2 and y < 1.2:
+    77     93325    3709269.0     39.7     68.4              x_num,y_num = np.sum(l < x)-1,np.sum(l < y)-1 
+    78     93325     398276.0      4.3      7.3              signal[x_num,y_num] += 1
+    79         1         24.0     24.0      0.0      signal_2 = np.zeros([size,size])
+    80         1       4000.0   4000.0      0.1      electron_array = electron_array[np.logical_and(electron_array[:,0]<1.2,electron_array[:,0]>-1.2)]
+    81         1       3566.0   3566.0      0.1      electron_array = electron_array[np.logical_and(electron_array[:,1]<1.2,electron_array[:,1]>-1.2)]
+    82         1         10.0     10.0      0.0      x,y = (electron_array)[:,0] , (electron_array)[:,1]
+    83         1      10082.0  10082.0      0.2      num = np.digitize(x,l,right=True),np.digitize(y,l,right=True)
+    84         1       2171.0   2171.0      0.0      signal_2[num] += 1
+    85         1        792.0    792.0      0.0      print(np.std(signal_2-signal))
+    86         1          4.0      4.0      0.0      return signal_2
 
