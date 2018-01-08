@@ -1,0 +1,66 @@
+Timer unit: 1e-06 s
+
+Total time: 1.00236 s
+File: profile_as_signal.py
+Function: version_1 at line 35
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    35                                           @profile
+    36                                           def version_1():
+    37         1        499.0    499.0      0.0      x, y = np.meshgrid(l, l)
+    38         1          2.0      2.0      0.0      dp_dat = 0
+    39         1     816509.0 816509.0     81.5      g = Expression(_GAUSSIAN2D_EXPR, 'Gaussian2D', module='numexpr')
+    40        25        570.0     22.8      0.1      for (cx, cy), intensity in zip(coords[:,:2],intensities):
+    41        24       1792.0     74.7      0.2          g.intensity.value = intensity
+    42        24        613.0     25.5      0.1          g.sigma.value = sigma
+    43        24        664.0     27.7      0.1          g.cx.value = cx
+    44        24        961.0     40.0      0.1          g.cy.value = cy
+    45        24     144515.0   6021.5     14.4          dp_dat += g.function(x, y)
+    46         1      35578.0  35578.0      3.5      dp = ElectronDiffraction(dp_dat)
+    47         1        652.0    652.0      0.1      dp.set_calibration(2*max_r/size)
+    48         1          2.0      2.0      0.0      return dp
+
+Total time: 0.005948 s
+File: profile_as_signal.py
+Function: version_2 at line 50
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    50                                           @profile
+    51                                           def version_2():
+    52         1         38.0     38.0      0.6      signal = np.zeros([size,size])
+    53        25         57.0      2.3      1.0      for i in np.arange(coords.shape[0]):
+    54        24        103.0      4.3      1.7          x,y = coords[i,0]-(delta_l/2),coords[i,1]-(delta_l/2)
+    55        24        988.0     41.2     16.6          x_num,y_num = np.sum(l < x)-1,np.sum(l < y)-1    
+    56        24        745.0     31.0     12.5          signal[x_num,y_num] += diff_dat.intensities[i]
+    57         1         12.0     12.0      0.2      from skimage.filters import gaussian as point_spread
+    58         1       4003.0   4003.0     67.3      signal = point_spread(signal,sigma=sigma/delta_l)
+    59         1          2.0      2.0      0.0      return signal
+
+Total time: 5.52588 s
+File: profile_as_signal.py
+Function: version_3 at line 61
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    61                                           @profile
+    62                                           def version_3(sigma):
+    63         1          2.0      2.0      0.0      electron_array = False
+    64         1          2.0      2.0      0.0      ss = 5000 #sample size
+    65                                               #sigma = sigma*delta_l
+    66         1         79.0     79.0      0.0      peak_location_detailed = np.hstack((coords,np.ones_like(intensities.reshape(24,1))))
+    67        25        134.0      5.4      0.0      for peak in peak_location_detailed:
+    68        24        197.0      8.2      0.0          if type(electron_array) == np.ndarray:
+    69        23      28765.0   1250.7      0.5              electron_array_2 = np.random.multivariate_normal(peak[:2],sigma*np.eye(2,2),size=ss*np.rint(peak[3]).astype(int))
+    70        23      14014.0    609.3      0.3              electron_array = np.vstack((electron_array,electron_array_2))  
+    71                                                   else:
+    72         1       1396.0   1396.0      0.0              electron_array = np.random.multivariate_normal(peak[:2],sigma*np.eye(2,2),size=ss*np.rint(peak[3]).astype(int))
+    73         1         12.0     12.0      0.0      signal = np.zeros([size,size])
+    74    120001     316152.0      2.6      5.7      for elect in electron_array:
+    75    120000     466760.0      3.9      8.4          x,y = elect[0]-(delta_l/2),elect[1]-(delta_l/2)
+    76    120000     315074.0      2.6      5.7          if x > -1.2 and x < 1.2 and y > -1.2 and y < 1.2:
+    77     93303    3987842.0     42.7     72.2              x_num,y_num = np.sum(l < x)-1,np.sum(l < y)-1 
+    78     93303     395447.0      4.2      7.2              signal[x_num,y_num] += 1
+    79         1          2.0      2.0      0.0      return signal
+
